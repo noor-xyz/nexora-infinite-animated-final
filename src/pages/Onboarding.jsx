@@ -1,0 +1,4 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { worlds } from '../data/worlds'
+export default function Onboarding(){const [selected,setSelected]=useState(['python']);const nav=useNavigate();const toggle=id=>setSelected(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id]);return <div className="auth-page"><div className="onboarding-card"><span className="eyebrow">QUEST SETUP · 01</span><h1>Choose your first worlds.</h1><p>Pick the skills you want to train. You can unlock more anytime.</p><div className="onboard-grid">{worlds.map(w=><button key={w.id} onClick={()=>toggle(w.id)} className={selected.includes(w.id)?'selected':''}><span>{w.icon}</span><strong>{w.name}</strong><small>{selected.includes(w.id)?'Selected':'Select world'}</small></button>)}</div><button className="primary-btn full" onClick={()=>nav('/dashboard')}>Enter NEXORA →</button></div></div>}

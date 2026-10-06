@@ -1,0 +1,2 @@
+import { Link } from 'react-router-dom'
+export default function AIMentorCard() { return <div className="ai-mentor-card"><div className="ai-orb small"><span>AI</span></div><div className="ai-copy"><span className="eyebrow">NEXORA AI MENTOR</span><h3>Your personal coding coach.</h3><p>Get thoughtful hints, clear explanations, and debugging guidance tailored to what you are learning.</p><Link to="/mentor" className="primary-btn small-btn">Talk to your Mentor →</Link></div></div> }
