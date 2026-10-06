@@ -1,21 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL
-const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+const rawUrl = import.meta.env.VITE_SUPABASE_URL
+const rawKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
 const hasPlaceholderValue = value => !value || /YOUR[_-]|PLACEHOLDER|REPLACE/i.test(value)
-const isProjectUrl = value => {
+
+const normalizeSupabaseUrl = value => {
+  if (!value || hasPlaceholderValue(value)) return null
   try {
     const parsedUrl = new URL(value)
-    return ['https:', 'http:'].includes(parsedUrl.protocol) && parsedUrl.pathname.replace(/\/+$/, '') === ''
+    if (!['https:', 'http:'].includes(parsedUrl.protocol)) return null
+    return parsedUrl.origin
   } catch {
-    return false
+    return null
   }
 }
 
-export const isSupabaseConfigured = !hasPlaceholderValue(url)
-  && !hasPlaceholderValue(key)
-  && isProjectUrl(url)
+const url = normalizeSupabaseUrl(rawUrl)
+const key = !hasPlaceholderValue(rawKey) ? rawKey.trim() : null
+
+export const isSupabaseConfigured = Boolean(url && key)
 export const supabase = isSupabaseConfigured ? createClient(url, key) : null
 
 export async function getWorlds() {

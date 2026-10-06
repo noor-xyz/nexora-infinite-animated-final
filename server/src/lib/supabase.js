@@ -1,9 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
 
-const url = process.env.SUPABASE_URL
-const key = process.env.SUPABASE_PUBLISHABLE_KEY
+const rawUrl = process.env.SUPABASE_URL
+const rawKey = process.env.SUPABASE_PUBLISHABLE_KEY
 
-export const supabaseConfigured = Boolean(url && key && !url.includes('YOUR_') && !key.includes('YOUR_'))
+const hasPlaceholder = value => !value || /YOUR[_-]|PLACEHOLDER|REPLACE/i.test(value)
+
+const normalizeUrl = value => {
+  if (!value || hasPlaceholder(value)) return null
+  try {
+    const parsed = new URL(value)
+    return ['https:', 'http:'].includes(parsed.protocol) ? parsed.origin : null
+  } catch {
+    return null
+  }
+}
+
+const url = normalizeUrl(rawUrl)
+const key = !hasPlaceholder(rawKey) ? rawKey.trim() : null
+
+export const supabaseConfigured = Boolean(url && key)
 
 export function getSupabaseForToken(accessToken) {
   if (!supabaseConfigured) return null
@@ -15,6 +30,6 @@ export function getSupabaseForToken(accessToken) {
 
 export function getSupabaseAdmin() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !serviceKey) return null
-  return createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
+  if (!url || !serviceKey || hasPlaceholder(serviceKey)) return null
+  return createClient(url, serviceKey.trim(), { auth: { persistSession: false, autoRefreshToken: false } })
 }
