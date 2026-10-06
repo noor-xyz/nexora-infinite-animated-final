@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 
   if (!supabaseConfigured) {
-    return res.json({ ...base, databaseConnected: false, databaseMessage: 'Add SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY to backend/.env' })
+    return res.json({ ...base, databaseConnected: false, databaseMessage: 'Supabase is not configured.' })
   }
 
   try {
@@ -20,8 +20,8 @@ router.get('/', async (req, res) => {
     const { error } = await client.from('worlds').select('id').limit(1)
     if (error) throw error
     return res.json({ ...base, databaseConnected: true, databaseMessage: 'Supabase database is reachable.' })
-  } catch (error) {
-    return res.status(503).json({ ...base, databaseConnected: false, databaseMessage: error.message })
+  } catch {
+    return res.json({ ...base, databaseConnected: false, databaseMessage: 'Supabase database is unreachable.' })
   }
 })
 
