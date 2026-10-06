@@ -64,7 +64,7 @@ export async function getAchievementCatalog() {
 
 function requireSupabase() {
   if (!supabase) {
-    throw new Error('Supabase Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in a root .env file, then restart Vite.')
+    throw new Error('Supabase Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in client/.env, then restart Vite.')
   }
   return supabase
 }

@@ -5,7 +5,7 @@ Express API for the NEXORA frontend. It validates Supabase access tokens, uses S
 ## Setup
 
 ```powershell
-cd backend
+cd server
 npm install
 Copy-Item .env.example .env
 ```

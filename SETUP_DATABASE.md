@@ -1,115 +1,87 @@
 # NEXORA Database — Easy Setup
 
-You only need to do two things.
+Follow these steps to set up and verify your database and environment.
 
 ## 1. Create the database tables
 
-1. Open your NEXORA project in Supabase.
-2. Open **SQL Editor**.
+1. Open your project in Supabase.
+2. Navigate to **SQL Editor**.
 3. Click **New query**.
-4. Open `backend/supabase/schema.sql` from this project.
-5. Copy everything in that file.
-6. Paste it into Supabase SQL Editor.
+4. Open `supabase/schema.sql` from this repository.
+5. Copy the entire file content.
+6. Paste it into the Supabase SQL Editor.
 7. Click **Run**.
 
-The script is safe to run again if you need to retry.
+The schema script creates tables, triggers, functions, policies, and initial world/chapter/level/challenge seed data. It is idempotent and safe to run again.
 
-### Existing Supabase projects
+### Existing Supabase projects & Migrations
 
-Run `supabase/migrations/20261006020000_persist_level_challenge_answers.sql`
-in the SQL Editor to add private, per-user answer records and the transactional
-answer/XP/progress function required by the quest flow. The full schema files
-include the same database changes for new installations.
+If upgrading an existing database, run migrations in chronological order from `supabase/migrations/`:
+1. `supabase/migrations/20261006000000_repair_auth_profile_trigger.sql` — Auth profile creation trigger
+2. `supabase/migrations/20261006010000_seed_learning_chapters.sql` — Learning chapters
+3. `supabase/migrations/20261006020000_persist_level_challenge_answers.sql` — Answer persistence & transactional XP RPC
+4. `supabase/migrations/20261006030000_seed_level_one_beginner_quizzes.sql` — Level 1 beginner quizzes
+5. `supabase/migrations/20261006040000_seed_python_levels_two_to_five.sql` — Python Levels 2–5 challenges
 
-To seed the beginner quizzes for the seven Level 1 worlds, run
-`supabase/migrations/20261006030000_seed_level_one_beginner_quizzes.sql` in the
-SQL Editor after the schema and Level 1 rows exist. It is safe to run again.
-Fresh installations using `supabase/schema.sql` receive the same questions
-automatically.
+## 2. Configure the Server (Backend)
 
-To make Python Levels 1–5 playable, run
-`supabase/migrations/20261006040000_seed_python_levels_two_to_five.sql` in the
-SQL Editor after the schema, Python levels, and chapters exist. It preserves
-the existing Level 1 quizzes, seeds five authored challenges each for Levels
-2–5, and updates the first five Python level labels and XP rewards. It does not
-limit future levels or change other worlds. The migration is safe to run again.
-
-The app loads challenges from `public.challenges`; it does not generate demo
-questions. Add authored challenge rows linked to a level's `id`, with `options`
-as a JSON array of choice strings and `answer` as the zero-based numeric index
-of the correct choice. `prompt`, `explanation`, and nonnegative `xp_reward`
-should also be populated. The level becomes complete after all its challenge
-rows have been answered.
-
-### Repairing profile creation on an existing project
-
-If Auth signup succeeds but a user has no matching row in `public.profiles`,
-open `supabase/migrations/20261006000000_repair_auth_profile_trigger.sql` and
-run its contents in the Supabase SQL Editor. This reinstalls the
-`auth.users` trigger with a locked-down `SECURITY DEFINER` function and creates
-profiles for existing Auth users who are still missing one. It is safe to run
-again. Do not create profiles from the frontend or disable row-level security.
-
-## 2. Connect the backend
-
-Create this file:
-
-`backend/.env`
-
-Copy the contents of `backend/.env.example` into it and replace:
-
-- `SUPABASE_URL` with your Supabase Project URL
-- `SUPABASE_PUBLISHABLE_KEY` with your Supabase Publishable key
-
-Do NOT put a service-role key in the frontend. Do NOT commit `.env`.
-
-## 3. Connect the frontend
-
-At the project root, create `.env` from `.env.example` and set:
-
-- `VITE_SUPABASE_URL` to the same Supabase project root URL (do not append `/rest/v1`)
-- `VITE_SUPABASE_PUBLISHABLE_KEY` to the same publishable key
-
-The frontend uses Supabase Auth directly; without these values, it runs in demo
-mode and does not create real accounts.
-
-## 4. Start the backend
-
-From the `backend` folder:
+Create the `server/.env` file from `server/.env.example`:
 
 ```powershell
+cp server/.env.example server/.env
+```
+
+Set the values:
+- `PORT`: `4000` (or your preferred port)
+- `FRONTEND_ORIGIN`: `http://localhost:5173` (for local dev) or your deployed frontend domain (e.g., `https://your-app.vercel.app`)
+- `SUPABASE_URL`: Your Supabase Project URL (e.g., `https://your-project.supabase.co`)
+- `SUPABASE_PUBLISHABLE_KEY`: Your Supabase Publishable / Anon key
+- `OPENAI_API_KEY`: (Optional) Your OpenAI API key for AI Mentor
+
+## 3. Configure the Client (Frontend)
+
+Create the `client/.env` file from `client/.env.example`:
+
+```powershell
+cp client/.env.example client/.env
+```
+
+Set the values:
+- `VITE_SUPABASE_URL`: Your Supabase Project URL
+- `VITE_SUPABASE_PUBLISHABLE_KEY`: Your Supabase Publishable / Anon key
+- `VITE_API_URL`: Your backend URL (e.g. `http://localhost:4000` for local dev or `https://your-backend.onrender.com` in production)
+
+## 4. Run and Verify Backend
+
+```powershell
+cd server
+npm install
+npm start
+```
+
+Verify the health check endpoint:
+```powershell
+curl http://localhost:4000/api/health
+```
+
+Expected response:
+```json
+{
+  "ok": true,
+  "service": "nexora-backend",
+  "supabaseConfigured": true,
+  "databaseConnected": true,
+  "databaseMessage": "Supabase database is reachable."
+}
+```
+
+## 5. Run Client
+
+In a separate terminal:
+```powershell
+cd client
 npm install
 npm run dev
 ```
 
-You should see:
-
-`NEXORA backend running on http://localhost:4000`
-
-## 5. Test the database connection
-
-Open:
-
-`http://localhost:4000/api/health`
-
-You want to see:
-
-```json
-{
-  "ok": true,
-  "supabaseConfigured": true,
-  "databaseConnected": true
-}
-```
-
-If `databaseConnected` is false, the `databaseMessage` tells you what to fix.
-
-## 6. Start the frontend
-
-In a second terminal, from the project root:
-
-```powershell
-npm run dev
-```
-
-Then open the Vite URL.
+Open `http://localhost:5173` to test the full application.

@@ -1,28 +1,16 @@
 {
   "name": "nexora",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview",
-    "backend:install": "npm --prefix backend install",
-    "backend:dev": "npm --prefix backend run dev",
-    "backend:start": "npm --prefix backend start"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.117.2",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.4"
-  },
-  "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
-    "@vitejs/plugin-react": "^6.1.1",
-    "oxlint": "^1.81.0",
-    "vite": "^8.3.0"
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "client:lint": "npm --prefix client run lint",
+    "client:install": "npm --prefix client install",
+    "server:dev": "npm --prefix server run dev",
+    "server:start": "npm --prefix server start",
+    "server:lint": "npm --prefix server run lint",
+    "server:install": "npm --prefix server install",
+    "install:all": "npm run client:install && npm run server:install"
   }
 }

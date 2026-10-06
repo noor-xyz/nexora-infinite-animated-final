@@ -1,6 +1,9 @@
 import { supabase } from './supabase'
 
-const API_URL = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? '' : 'http://localhost:4000')
+const rawApiUrl = import.meta.env.VITE_API_URL
+const API_URL = (rawApiUrl !== undefined && rawApiUrl !== '')
+  ? rawApiUrl.replace(/\/+$/, '')
+  : (import.meta.env.DEV ? '' : 'http://localhost:4000')
 
 async function authHeaders() {
   if (!supabase) return { 'Content-Type': 'application/json' }
@@ -13,7 +16,9 @@ async function authHeaders() {
 
 export async function apiRequest(path, options = {}) {
   const headers = { ...(await authHeaders()), ...(options.headers || {}) }
-  const response = await fetch(`${API_URL}${path}`, { ...options, headers })
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  const url = `${API_URL}${cleanPath}`
+  const response = await fetch(url, { ...options, headers })
   const body = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(body.error || 'NEXORA API request failed')
   return body
